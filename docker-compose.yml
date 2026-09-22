@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+  # ── MongoDB ────────────────────────────────────────────────────────────────
+  mongodb:
+    image: nexus.gnet.tn:8084/padel/mongo:7.0
+    container_name: padel-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-ChangeMe123!}
+      MONGO_INITDB_DATABASE: padel-app
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - padel-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  # ── Backend (Node.js / Express) ────────────────────────────────────────────
+  backend:
+    image: nexus.gnet.tn:8084/padel/padel-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: padel-backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:ChangeMe123!@mongodb:27017/padel-app?authSource=admin}
+      JWT_SECRET: ${JWT_SECRET:-changeme_super_secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gnet.tn}
+      SMTP_PORT: ${SMTP_PORT:-25}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_AUTH: ${SMTP_AUTH:-false}
+      SMTP_USER: ${SMTP_USER:-event@globalnet.tn}
+      SMTP_PASS: ${SMTP_PASS:-}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      WIFI_SSID: ${WIFI_SSID:-Free Wi-Fi by GlobalNet}
+      WIFI_PASSWORD: ${WIFI_PASSWORD:-changez_ce_mot_de_passe}
+      ADRESSE_CLUB: ${ADRESSE_CLUB:-Padel Society — 7 Rue de l'Artisanat, Charguia 2, Tunis 2035}
+      LIEN_MAPS_CLUB: ${LIEN_MAPS_CLUB:-https://maps.app.goo.gl/gZWBtfNY1QVpbkccA}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@padel.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
+      ADMIN_CLIENTS_EMAIL: ${ADMIN_CLIENTS_EMAIL:-}
+      ADMIN_CLIENTS_PASSWORD: ${ADMIN_CLIENTS_PASSWORD:-}
+      ADMIN_CLIENTS_NOM: ${ADMIN_CLIENTS_NOM:-}
+      ADMIN_PERSONNEL_EMAIL: ${ADMIN_PERSONNEL_EMAIL:-}
+      ADMIN_PERSONNEL_PASSWORD: ${ADMIN_PERSONNEL_PASSWORD:-}
+      ADMIN_PERSONNEL_NOM: ${ADMIN_PERSONNEL_NOM:-}
+      EMAIL_RAPPORT_PARTICIPANTS: ${EMAIL_RAPPORT_PARTICIPANTS:-}
+    networks:
+      - padel-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Frontend (React + Nginx) ───────────────────────────────────────────────
+  frontend:
+    image: nexus.gnet.tn:8084/padel/padel-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: padel-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - padel-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  mongo_data:
+    driver: local
+
+# ── Réseau interne ─────────────────────────────────────────────────────────────
+networks:
+  padel-net:
+    driver: bridge
