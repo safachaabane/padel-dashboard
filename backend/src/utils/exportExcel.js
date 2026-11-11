@@ -1,6 +1,6 @@
 const ExcelJS = require('exceljs');
 
-const libelleStatut = (s) => ({ en_attente: 'En attente', confirme: 'Confirmée', re_reserve: 'Re-réservé', annule: 'Annulée' }[s] || s);
+const libelleStatut = (s) => ({ en_attente: 'En attente', confirme: 'Confirmée', re_reserve: '	Réserver à nouveau', annule: 'Annulée' }[s] || s);
 
 const libelleSatisfaction = (entree) => {
   if (!entree) return '—';

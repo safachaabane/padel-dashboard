@@ -31,9 +31,7 @@ export default function SuccessPage() {
             lineHeight: 1.7,
           }}
         >
-          Votre demande d'inscription en tant que{" "}
-          <strong>{type === "client" ? "client" : "personnel"}</strong> a bien
-          été reçue.
+          Votre demande d'inscription a bien été reçue.
         </p>
 
         <div

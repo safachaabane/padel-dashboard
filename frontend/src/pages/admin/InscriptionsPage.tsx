@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Users, Search, Filter, CheckSquare, CheckCircle2, Trash2, CalendarClock } from "lucide-react";
+import {
+  Users,
+  Search,
+  Filter,
+  CheckSquare,
+  CheckCircle2,
+  Trash2,
+  CalendarClock,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../utils/api";
 import { Inscription, Creneau } from "../../types";
@@ -31,11 +39,16 @@ function ReReserverModal({
     }
     setLoading(true);
     try {
-      await api.patch(`/inscriptions/${inscription._id}/re-reserver`, { date, creneauId });
+      await api.patch(`/inscriptions/${inscription._id}/re-reserver`, {
+        date,
+        creneauId,
+      });
       toast.success("Nouveau créneau enregistré, en attente de confirmation");
       onDone();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erreur lors de la re-réservation");
+      toast.error(
+        err.response?.data?.message || "Erreur lors de la re-réservation"
+      );
     } finally {
       setLoading(false);
     }
@@ -45,23 +58,48 @@ function ReReserverModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Re-réserver — {inscription.nomComplet}</h3>
+          <h3>Réserver à nouveau — {inscription.nomComplet}</h3>
         </div>
-        <p className="form-hint" style={{ display: "block", margin: "0 0 16px" }}>
-          Choisissez un nouveau créneau. Les informations du participant sont conservées, il n'est pas
-          nécessaire de les ressaisir.
+        <p
+          className="form-hint"
+          style={{ display: "block", margin: "0 0 16px" }}
+        >
+          Choisissez un nouveau créneau. Les informations du participant sont
+          conservées, il n'est pas nécessaire de les ressaisir.
         </p>
         <div style={{ marginBottom: 14 }}>
-          <DateSelector value={date} onChange={(d) => { setDate(d); setCreneauId(""); }} typeInscrit={inscription.typeInscrit} />
+          <DateSelector
+            value={date}
+            onChange={(d) => {
+              setDate(d);
+              setCreneauId("");
+            }}
+            typeInscrit={inscription.typeInscrit}
+          />
         </div>
         <div style={{ marginBottom: 20 }}>
-          <CreneauSelector date={date} value={creneauId} onChange={setCreneauId} typeInscrit={inscription.typeInscrit} />
+          <CreneauSelector
+            date={date}
+            value={creneauId}
+            onChange={setCreneauId}
+            typeInscrit={inscription.typeInscrit}
+          />
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onClose} disabled={loading}>
+          <button
+            className="btn btn-secondary"
+            style={{ flex: 1 }}
+            onClick={onClose}
+            disabled={loading}
+          >
             Annuler
           </button>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={valider} disabled={loading}>
+          <button
+            className="btn btn-primary"
+            style={{ flex: 1 }}
+            onClick={valider}
+            disabled={loading}
+          >
             {loading ? "Enregistrement…" : "Valider le nouveau créneau"}
           </button>
         </div>
@@ -78,7 +116,9 @@ export default function InscriptionsPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
-  const [reReserverCible, setReReserverCible] = useState<Inscription | null>(null);
+  const [reReserverCible, setReReserverCible] = useState<Inscription | null>(
+    null
+  );
 
   const load = () => {
     const params: Record<string, string> = {};
@@ -191,13 +231,20 @@ export default function InscriptionsPage() {
         return next;
       });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erreur lors de la suppression");
+      toast.error(
+        err.response?.data?.message || "Erreur lors de la suppression"
+      );
     }
   };
 
   const handleSupprimerSelection = async () => {
     if (selectedIds.size === 0) return;
-    if (!window.confirm(`Supprimer définitivement ${selectedIds.size} inscription(s) ?`)) return;
+    if (
+      !window.confirm(
+        `Supprimer définitivement ${selectedIds.size} inscription(s) ?`
+      )
+    )
+      return;
     setBulkLoading(true);
     try {
       const { data } = await api.delete("/inscriptions/bulk/supprimer", {
@@ -207,7 +254,9 @@ export default function InscriptionsPage() {
       setSelectedIds(new Set());
       load();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erreur lors de la suppression");
+      toast.error(
+        err.response?.data?.message || "Erreur lors de la suppression"
+      );
     } finally {
       setBulkLoading(false);
     }
@@ -219,7 +268,7 @@ export default function InscriptionsPage() {
     if (s === "en_attente")
       return <span className="badge badge-yellow">⏳ En attente</span>;
     if (s === "re_reserve")
-      return <span className="badge badge-blue">📅 Re-réservé</span>;
+      return <span className="badge badge-blue">📅 Réservée à nouveau</span>;
     return <span className="badge badge-red">✕ Annulée</span>;
   };
 
@@ -287,7 +336,7 @@ export default function InscriptionsPage() {
             <option value="">Tous statuts</option>
             <option value="en_attente">En attente</option>
             <option value="confirme">Confirmées</option>
-            <option value="re_reserve">Re-réservées</option>
+            <option value="re_reserve">Réservées à nouveau</option>
             <option value="annule">Annulées</option>
           </select>
 
@@ -515,12 +564,17 @@ export default function InscriptionsPage() {
                               handleStatutChange(ins._id, e.target.value)
                             }
                           >
-                            <option value="en_attente" disabled={ins.statut === "confirme"}>
+                            <option
+                              value="en_attente"
+                              disabled={ins.statut === "confirme"}
+                            >
                               En attente
                             </option>
-                            <option value="confirme">Confirmée</option>
-                            <option value="re_reserve">Re-réservée</option>
-                            <option value="annule">Annulée</option>
+                            <option value="confirme">Confirmer</option>
+                            <option value="re_reserve">
+                              Réserver à nouveau
+                            </option>
+                            <option value="annule">Annuler</option>
                           </select>
                           {ins.statut === "re_reserve" && (
                             <button
@@ -528,8 +582,11 @@ export default function InscriptionsPage() {
                               style={{ marginTop: 6, width: "100%" }}
                               onClick={() => setReReserverCible(ins)}
                             >
-                              <CalendarClock size={13} style={{ marginRight: 4 }} />
-                              Re-réserver
+                              <CalendarClock
+                                size={13}
+                                style={{ marginRight: 4 }}
+                              />
+                              Réserver à nouveau
                             </button>
                           )}
                         </td>

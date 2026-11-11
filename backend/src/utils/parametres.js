@@ -17,6 +17,18 @@ const DEFINITIONS = {
   limiteHebdomadaireClient: { type: 'nombre', defaut: 1, min: 0 },
   limiteHebdomadairePersonnel: { type: 'nombre', defaut: 2, min: 0 },
 
+  // Délai minimum (en jours) entre deux inscriptions d'une même personne du personnel.
+  // Le contrôle se fait par email, sur le participant ET ses invités, en comparant avec
+  // toutes les inscriptions personnel en attente/confirmées. 0 désactive la règle.
+  delaiEntreReservationsJours: { type: 'nombre', defaut: 15, min: 0 },
+
+  // Message affiché au joueur bloqué par le délai ci-dessus (modifiable dans le dashboard).
+  messageBlocageReservation: {
+    type: 'texte',
+    defaut: "Vous avez déjà utilisé votre réservation autorisée. Réessayez plus tard.",
+    maxLength: 500,
+  },
+
   // Jours de la semaine ouverts au calendrier, par type (0=dimanche ... 6=samedi).
   // Raccourci "7/7" = tous les jours cochés.
   joursOuvertsClient: { type: 'joursSemaine', defaut: TOUS_LES_JOURS },
@@ -62,6 +74,12 @@ function normaliser(cle, valeur) {
       const emails = [...new Set(valeur.map((v) => String(v || '').trim().toLowerCase()).filter(Boolean))];
       if (emails.some((e) => !REGEX_EMAIL.test(e))) return undefined;
       return emails;
+    }
+    case 'texte': {
+      if (typeof valeur !== 'string') return undefined;
+      const texte = valeur.trim();
+      if (!texte || texte.length > (def.maxLength ?? 1000)) return undefined;
+      return texte;
     }
     default:
       return undefined;

@@ -49,6 +49,11 @@ export interface ParametresAdmin extends ParametresPublics {
   limiteHebdomadaireClient: number;
   limiteHebdomadairePersonnel: number;
 
+  // Délai minimum entre deux inscriptions d'une même personne (email) pour le personnel,
+  // et message affiché en cas de blocage.
+  delaiEntreReservationsJours: number;
+  messageBlocageReservation: string;
+
   joursOuvertsClient: number[];
   joursOuvertsPersonnel: number[];
   heureOuvertureClient: string;

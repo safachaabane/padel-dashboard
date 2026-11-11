@@ -7,11 +7,13 @@ import { ParametresAdmin, JOURS_SEMAINE } from '../../types';
 
 const TOUS_LES_JOURS = JOURS_SEMAINE.map((j) => j.valeur);
 
-interface ChampsNumeriques {
+interface ChampsParametres {
   delaiMinJours: number;
   joursCalendrierVisibles: number;
   limiteHebdomadaireClient: number;
   limiteHebdomadairePersonnel: number;
+  delaiEntreReservationsJours: number;
+  messageBlocageReservation: string;
 }
 
 function JoursOuvertsSelector({
@@ -167,7 +169,7 @@ function EmailsResponsableInput({
 }
 
 export default function ParametresPage() {
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<ChampsNumeriques>();
+  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<ChampsParametres>();
 
   const [chargement, setChargement] = useState(true);
 
@@ -188,6 +190,8 @@ export default function ParametresPage() {
         joursCalendrierVisibles: d.joursCalendrierVisibles,
         limiteHebdomadaireClient: d.limiteHebdomadaireClient,
         limiteHebdomadairePersonnel: d.limiteHebdomadairePersonnel,
+        delaiEntreReservationsJours: d.delaiEntreReservationsJours,
+        messageBlocageReservation: d.messageBlocageReservation,
       });
       setJoursOuvertsClient(d.joursOuvertsClient);
       setJoursOuvertsPersonnel(d.joursOuvertsPersonnel);
@@ -200,7 +204,7 @@ export default function ParametresPage() {
     }).finally(() => setChargement(false));
   }, [reset]);
 
-  const onSubmit = async (data: ChampsNumeriques) => {
+  const onSubmit = async (data: ChampsParametres) => {
     try {
       const payload: ParametresAdmin = {
         ...data,
@@ -295,6 +299,41 @@ export default function ParametresPage() {
                 className="form-input"
                 {...register('limiteHebdomadairePersonnel', { required: true, min: 0, valueAsNumber: true })}
               />
+            </div>
+          </div>
+        </div>
+
+        <div className="card" style={{ marginBottom: 20 }}>
+          <h3 style={{ marginBottom: 4, fontSize: '1.05rem' }}>Délai entre deux réservations (personnel)</h3>
+          <p className="form-hint" style={{ display: 'block', marginBottom: 16 }}>
+            Un joueur identifié par son email (participant principal ou invité) ne peut pas
+            s'inscrire s'il figure déjà dans une inscription personnel en attente ou confirmée
+            créée dans les N derniers jours. Mettez 0 pour désactiver cette règle.
+          </p>
+
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Délai minimum (jours)</label>
+              <input
+                type="number"
+                min={0}
+                className="form-input"
+                {...register('delaiEntreReservationsJours', { required: true, min: 0, valueAsNumber: true })}
+              />
+              <span className="form-hint">Par défaut : 15 jours.</span>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Message affiché en cas de blocage</label>
+              <textarea
+                rows={3}
+                maxLength={500}
+                className="form-input"
+                {...register('messageBlocageReservation', { required: true })}
+              />
+              <span className="form-hint">
+                Ce message s'affiche sur le formulaire d'inscription du personnel.
+              </span>
             </div>
           </div>
         </div>
